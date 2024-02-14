@@ -38,12 +38,12 @@ def to_3d(u,v,d, acc):
     m = np.array([u,v,1])
     m = np.transpose(m)
     RES = (inv(K) @ m ) * d
-    kp_3d = {"x" : float(RES[0]), "y": float(RES[1]), "z" : float(RES[2]), "u" : float(u), "v":float(v), "d" : float(d), "acc": float(acc)}
+    kp_3d =  {"x" : float(RES[0]), "y": float(RES[1]), "z" : float(RES[2]), "u" : float(u), "v":float(v), "d" : float(d), "acc": float(acc)}
 
     return kp_3d
 
 def get_3D_keypoints(depth,rgb):
-    keypoints_3d = []
+    keypoints_3d = {}
     for key in rgb:
         #print(key)
     
@@ -66,8 +66,8 @@ def get_3D_keypoints(depth,rgb):
         acc = rgb[key][2]
         kp3d = to_3d(y,x,d, acc)
         
-        kp3d["name"] = key
-        keypoints_3d.append(kp3d)
+        # kp3d["name"] = key
+        keypoints_3d[key] = kp3d
         
     return keypoints_3d
 

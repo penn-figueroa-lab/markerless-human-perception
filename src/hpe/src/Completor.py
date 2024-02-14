@@ -1,27 +1,8 @@
-import rospy
-from sensor_msgs.msg import Image as msg_Image
-from sensor_msgs.msg import CameraInfo
-from std_msgs.msg import String
-
-import numpy as np
-import os
-from numpy.linalg import inv
-import json
-import sys
-sys.path.append('/usr/local/python')
-import time
-
-
-# -----------------------------------------------------------------------
-# Class Completor
-# -----------------------------------------------------------------------
-
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from Skeleton import Skeleton,ConstrainedSkeleton
 
-# limit the GPU usage 
 gpus = tf.config.experimental.list_physical_devices('GPU')
 for gpu in gpus:
   tf.config.experimental.set_memory_growth(gpu, True)
@@ -105,8 +86,8 @@ class Completor():
         return filtered_skeleton * (self.in_max-self.in_min) + self.in_min
 
     def bio_norm(self,skeleton):
-        s12 = Skeleton('/home/rmhri/markerless-human-perception/src/hpe/src/Biomechanical-Model/BODY12.xml')
-        s15 = ConstrainedSkeleton('/home/rmhri/markerless-human-perception/src/hpe/src/Biomechanical-Model/BODY15_constrained_3D.xml')
+        s12 = Skeleton('BODY12.xml')
+        s15 = ConstrainedSkeleton('BODY15_constrained_3D.xml')
         labels = ['LShoulder','RShoulder','LElbow','RElbow','LWrist','RWrist','LHip','RHip','LKnee','RKnee','LAnkle','RAnkle']
         x = skeleton.reshape(-1,3)
         s12.load_from_numpy(x,labels)
@@ -123,8 +104,8 @@ class Completor():
         return filtered_skeleton.reshape((1, -1))
 
     def bio_norm_onehot(self,skeleton):
-        s12 = Skeleton('/home/rmhri/markerless-human-perception/src/hpe/src/Biomechanical-Model/BODY12.xml')
-        s15 = ConstrainedSkeleton('/home/rmhri/markerless-human-perception/src/hpe/src/Biomechanical-Model/BODY15_constrained_3D.xml')
+        s12 = Skeleton('BODY12.xml')
+        s15 = ConstrainedSkeleton('BODY15_constrained_3D.xml')
         labels = ['LShoulder','RShoulder','LElbow','RElbow','LWrist','RWrist','LHip','RHip','LKnee','RKnee','LAnkle','RAnkle']
         x = skeleton.reshape(-1,3)
         s12.load_from_numpy(x,labels)
@@ -143,61 +124,3 @@ class Completor():
         filtered_skeleton = self.bio_denorm(filtered_skeleton)
         filled = np.where(np.isnan(skeleton),filtered_skeleton[0,:],skeleton)    
         return filled
-    
-# -----------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-parts_25 = ["Nose","Neck", "RShoulder", "RElbow", "RWrist", "LShoulder", "LElbow","LWrist", "MidHip",\
-            "RHip", "RKnee", "RAnkle", "LHip", "LKnee", "LAnkle", "REye", "LEye", "REar", "LEar", "LBigToe",\
-            "LSmallToe", "LHeel", "RBigToe", "RSmallToe", "RHeel", "Background"]
-
-labels =  ['LShoulder','RShoulder','LElbow','RElbow','LWrist','RWrist','LHip','RHip','LKnee','RKnee','LAnkle','RAnkle']
-def callback(pose):
-    pose = json.loads(pose.data)
-    # For each person
-    for p in range(len(pose["value"])):
-        x = []
-        for kp in labels:
-            if pose["value"][p][kp]["acc"] > 0.2:
-                x.append(pose["value"][p][kp]["x"])
-                x.append(pose["value"][p][kp]["y"])
-                x.append(pose["value"][p][kp]["z"])
-            else:
-                x.append(np.nan)
-                x.append(np.nan)
-                x.append(np.nan)
-        x = np.array(x)
-        y = completor(x)
-        print(x,y,"\n\n\n\n")
-        
-    
-
-    out_msg = "TBD" # json.dumps({camera_info.header.stamp.to_sec() : res})
-    pub.publish(out_msg)
-    
-def main():
-    global pub, completor
-    rospy.init_node("human_pose_refinement")  
-    # Initiate listener
-    rospy.Subscriber("poses", String, callback)
-    
-    # Setup publisher
-    pub = rospy.Publisher('refined_poses', String, queue_size=10)
-    
-    completor = Completor("/home/rmhri/markerless-human-perception/src/hpe/src/MLP_bio_h36m_cameraview_3D_absolute_onehot",3)
-    
-    # Synchronize
-    rospy.spin()
-
-if __name__ == main():
-    try:
-        main()
-    except rospy.ROSInterruptException:
-        rospy.logwarn("Node Not Executed")
