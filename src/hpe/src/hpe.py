@@ -134,12 +134,13 @@ def openpose_process(image):
     return printKeypoints(datum)
 
 def callback(data_color,data_depth, camera_info):
+    #print("got data")
     global K
     cv_color = bridge.imgmsg_to_cv2(data_color, data_color.encoding)
     cv_depth = bridge.imgmsg_to_cv2(data_depth, data_depth.encoding)
     depth_array = np.array(cv_depth, dtype=np.float32)
-    cv2.imwrite("/home/rmhri/imgs/depth2.png",cv2.cvtColor(cv_depth,cv2.COLOR_BGR2RGB))
-    cv2.imwrite("/home/rmhri/imgs/depth2.png",cv2.cvtColor(cv_color,cv2.COLOR_BGR2RGB))
+    # cv2.imwrite("/home/rmhri/imgs/depth2.png",cv2.cvtColor(cv_depth,cv2.COLOR_BGR2RGB))
+    # cv2.imwrite("/home/rmhri/imgs/depth2.png",cv2.cvtColor(cv_color,cv2.COLOR_BGR2RGB))
 
     res = openpose_process(cv_color)
     
@@ -165,12 +166,13 @@ def main():
     info_sub = message_filters.Subscriber('/camera/color/camera_info', CameraInfo)
     
     # Setup publisher
-    pub = rospy.Publisher('poses', String, queue_size=10)
+    pub = rospy.Publisher('hpe/poses', String, queue_size=1000)
     #rospy.init_node('3Dhpe', anonymous=False)
     
     # Synchronize
     ts = message_filters.TimeSynchronizer([color_sub, depth_sub, info_sub], 10)
     ts.registerCallback(callback)
+    # print("Openpose set up, collecting data.")
     rospy.spin()
 
 if __name__ == main():

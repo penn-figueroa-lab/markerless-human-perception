@@ -2,6 +2,7 @@
 import cv2 
 import numpy as np
 from numpy.linalg import inv
+import itertools 
 
 width     = 848
 height    = 480
@@ -9,58 +10,41 @@ framerate = 60
 depth_width = 848
 depth_height = 480
 
-K = np.load("/home/rmhri/catkin_ws/src/K.npy")
-depth = np.load("/home/rmhri/catkin_ws/src/depth.npy")
+K = np.load("/home/rmhri/markerless-human-perception/src/K.npy")
+depth = np.load("/home/rmhri/markerless-human-perception/src/depth.npy")
+P3D = np.load("/home/rmhri/markerless-human-perception/src/points.npy")*1000 # Optitrack send in 'm'
 
 import numpy as np
-# Input: expects 3xN matrix of points
-# Returns R,t
-# R = 3x3 rotation matrix
-# t = 3x1 column vector
+
 def rigid_transform_3D(A, B):
-    assert A.shape == B.shape
+    # Transformation matrix that goes from A to B, such as TR*A = B
+    # It works using N x 3 or N x 4 points
 
-    num_rows, num_cols = A.shape
-    if num_rows != 3:
-        raise Exception(f"matrix A is not 3xN, it is {num_rows}x{num_cols}")
+    centroid_A = np.mean(A, axis=0)
+    centroid_B = np.mean(B, axis=0)
 
-    num_rows, num_cols = B.shape
-    if num_rows != 3:
-        raise Exception(f"matrix B is not 3xN, it is {num_rows}x{num_cols}")
+    H = np.dot((A - centroid_A).T, (B - centroid_B))
 
-    # find mean column wise
-    centroid_A = np.mean(A, axis=1)
-    centroid_B = np.mean(B, axis=1)
+    U, S, V = np.linalg.svd(H, full_matrices=False)
 
-    # ensure centroids are 3x1
-    centroid_A = centroid_A.reshape(-1, 1)
-    centroid_B = centroid_B.reshape(-1, 1)
+    _, log_det = np.linalg.slogdet(np.dot(V, U.T))
+    d = np.sign(log_det)    
+    
+    
+    diagonal = np.array([1, 1, d])
+    if A.shape[1] == 4:
+        diagonal[3] = 1
+    TR = np.dot(np.dot(V.transpose(), np.diag(diagonal)), U.T)   
+    
+    t_vec = centroid_B - np.dot(TR, centroid_A)
 
-    # subtract mean
-    Am = A - centroid_A
-    Bm = B - centroid_B
+    # Could be a 3x3 matrix, enlarge to 4x4 if not to hold transformation
+    if TR.shape[0] == 3:
+        TR = np.pad(TR, ((0, 1), (0, 1)), mode='constant', constant_values=0)
+        TR[3, 3] = 1
+    TR[:3, 3] = t_vec[:3]
 
-    H = Am @ np.transpose(Bm)
-
-    # sanity check
-    #if linalg.matrix_rank(H) < 3:
-    #    raise ValueError("rank of H = {}, expecting 3".format(linalg.matrix_rank(H)))
-
-    # find rotation
-    U, S, Vt = np.linalg.svd(H)
-    R = Vt.T @ U.T
-
-    # special reflection case
-    if np.linalg.det(R) < 0:
-        print("det(R) < R, reflection detected!, correcting for it ...")
-        Vt[2,:] *= -1
-        R = Vt.T @ U.T
-
-    t = -R @ centroid_A + centroid_B
-
-    return R, t
-
-
+    return TR
 
 def to_3d(u,v,d):
     m = np.array([u,v,1])
@@ -68,6 +52,44 @@ def to_3d(u,v,d):
     RES = (inv(K) @ m ) * d
     return RES[0:3]
  
+# Get Nx3 matrix, output a NxN adjacence matrix with the distance between each i and j points
+def get_adjancence_matrix(points):
+    assert points.shape == (5,3)
+    adj = np.zeros((points.shape[0],points.shape[0]))
+    for i in range(len(points)):
+        for j in range(len(points)):
+            adj[i,j] = np.linalg.norm(points[i,:] - points[j,:])
+    return adj
+    
+def export_RT(p3d):
+    
+    permutations = list(itertools.permutations(P3D))
+    score = np.empty(len(permutations))
+    
+    calib_board = [
+        [0,     0,      0],
+        [0,     100,     0],
+        [200,   100,     0],
+        [200,   0,      0],
+        [170,   30,      0]
+    ]
+    
+    # gt = get_adjancence_matrix(np.array(p3d))
+    gt = get_adjancence_matrix(np.array(calib_board))
+    win = np.nan
+    w_score = np.inf
+    for i in range(len(permutations)):
+        adj = get_adjancence_matrix(np.array(permutations[i]))
+        score = np.mean(np.abs(adj-gt))
+        if score < w_score:
+            win = i
+            w_score = score
+    Rt = rigid_transform_3D(np.array(p3d),np.array(permutations[win]))
+    res = np.dot(np.array(p3d),Rt[:3,:3].transpose())+Rt[:3,3].transpose()
+    print(np.mean(np.abs(res-np.array(permutations[win]))))
+    np.save("/home/rmhri/markerless-human-perception/src/RT",Rt)
+    exit()
+
 def click_event(event, x, y, flags, params): 
     global points2d
     
@@ -82,8 +104,7 @@ def click_event(event, x, y, flags, params):
                     0.4, (0, 200, 0), 1) 
         cv2.imshow('image', img) 
         if len(points2d)==5:
-            print(points2d)
-            
+            p3d = []
             # de-project the point in 3d
             for p2d in points2d:
                 y = (p2d[1] / height) * depth_height
@@ -100,9 +121,12 @@ def click_event(event, x, y, flags, params):
                     y = height -1
                 if x >= width:
                     x = width -1
-                p3d = to_3d(y,x,d)
-                print(p3d)
-            
+                p3d.append(to_3d(y,x,d))
+            try:
+                export_RT(p3d)
+            except Exception as error:
+                print(error)
+                cv2.destroyAllWindows() 
             cv2.destroyAllWindows() 
 
 points2d = []
@@ -110,10 +134,12 @@ points2d = []
 # driver function 
 if __name__=="__main__": 
 
-    img = cv2.imread("/home/rmhri/catkin_ws/src/color.png", 1) 
+    img = cv2.imread("/home/rmhri/markerless-human-perception/src/color.png", 1) 
   
     cv2.imshow('image', img) 
 
     cv2.setMouseCallback('image', click_event) 
   
-    cv2.waitKey(0)     
+    cv2.waitKey(0)
+    
+    print("hey")
