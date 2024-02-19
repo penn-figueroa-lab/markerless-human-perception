@@ -84,9 +84,11 @@ def export_RT(p3d):
         if score < w_score:
             win = i
             w_score = score
+    print("Average error of optitrack:",np.round(np.mean(np.abs(get_adjancence_matrix(np.array(permutations[win]))-gt)),2),"mm")
     Rt = rigid_transform_3D(np.array(p3d),np.array(permutations[win]))
     res = np.dot(np.array(p3d),Rt[:3,:3].transpose())+Rt[:3,3].transpose()
-    print(np.mean(np.abs(res-np.array(permutations[win]))))
+    print("Average error of realsense:",np.round(np.mean(np.abs(get_adjancence_matrix(np.array(res))-gt)),2),"mm")
+    print("Average error w.r.t. of optitrack for each axis:", np.round(np.mean(np.abs(res-np.array(permutations[win])),axis=0),2),"mm")
     np.save("/home/rmhri/markerless-human-perception/src/RT",Rt)
     exit()
 

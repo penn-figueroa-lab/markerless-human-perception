@@ -37,7 +37,6 @@ def callback(data_color,data_depth, camera_info, m0, m1, m2, m3, m4):
     cv_depth = bridge.imgmsg_to_cv2(data_depth, data_depth.encoding)
     
     if depth_array is None:
-        print("solo una")
         depth_array = np.array(cv_depth, dtype=np.float32)
         point_array = np.empty((5,3))
         counter = 1    
@@ -53,7 +52,6 @@ def callback(data_color,data_depth, camera_info, m0, m1, m2, m3, m4):
         np.save("/home/rmhri/markerless-human-perception/src/depth",depth_array/counter)
         np.save("/home/rmhri/markerless-human-perception/src/K",K)
         np.save("/home/rmhri/markerless-human-perception/src/points",point_array/counter)
-        print(point_array/counter)
         rospy.signal_shutdown("Ended the iterations")
     else:
         point_array[0,:] += [m0.point.x, m0.point.y, m0.point.z]

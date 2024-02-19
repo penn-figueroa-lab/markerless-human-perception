@@ -152,7 +152,8 @@ class Completor():
 
 
 
-
+parts_15 = ["Root","MidShoulder","LShoulder","LElbow","LWrist","RShoulder",\
+            "RElbow","RWrist","MidHip","LHip","LKnee","LAnkle","RHip","RKnee","RAnkle"]
 
 parts_25 = ["Nose","Neck", "RShoulder", "RElbow", "RWrist", "LShoulder", "LElbow","LWrist", "MidHip",\
             "RHip", "RKnee", "RAnkle", "LHip", "LKnee", "LAnkle", "REye", "LEye", "REar", "LEar", "LBigToe",\
@@ -161,6 +162,10 @@ parts_25 = ["Nose","Neck", "RShoulder", "RElbow", "RWrist", "LShoulder", "LElbow
 labels =  ['LShoulder','RShoulder','LElbow','RElbow','LWrist','RWrist','LHip','RHip','LKnee','RKnee','LAnkle','RAnkle']
 def callback(pose):
     pose = json.loads(pose.data)
+    refined_poses = {}
+    refined_poses["timestamp"] = pose["timestamp"]
+    refined_poses["value"] = []
+    
     # For each person
     for p in range(len(pose["value"])):
         x = []
@@ -174,23 +179,39 @@ def callback(pose):
                 x.append(np.nan)
                 x.append(np.nan)
         x = np.array(x)
-        y = completor(x)
-        print(x,y,"\n\n\n\n")
+        missings = (len(x)-np.count_nonzero(np.isnan(x))) /len(x)
         
+        # You have to see at least 50% of the keypoints to complete the others!
+        if completor is not None and missings < 0.5:
+            y = completor(x)
+            # If there are still gaps skip the person
+            if np.any(np.isnan(y)):
+                continue
+            s12 = Skeleton('/home/rmhri/markerless-human-perception/src/hpe/src/Biomechanical-Model/BODY12.xml')
+            s15 = ConstrainedSkeleton('/home/rmhri/markerless-human-perception/src/hpe/src/Biomechanical-Model/BODY15_constrained_3D.xml')
+            y = y.reshape(-1,3)
+            s12.load_from_numpy(y,labels)
+            s15.load_from_BODY12(s12)
+            s = s15.to_numpy(parts_15)
+            s_dict = {}
+            for i,label in enumerate(parts_15):
+                s_dict[label] = {'x':s[i,0],'y':s[i,1],'z':s[i,2]}
+            refined_poses["value"].append(s_dict)
     
-
-    out_msg = "TBD" # json.dumps({camera_info.header.stamp.to_sec() : res})
-    pub.publish(out_msg)
-    
+    if refined_poses["value"]:
+        out_msg = json.dumps(refined_poses)
+        pub.publish(out_msg)
+        
+        
+completor = None 
 def main():
     global pub, completor
     rospy.init_node("human_pose_refinement")  
     # Initiate listener
-    rospy.Subscriber("poses", String, callback)
+    rospy.Subscriber("hpe/poses", String, callback)
     
     # Setup publisher
-    pub = rospy.Publisher('refined_poses', String, queue_size=10)
-    
+    pub = rospy.Publisher('hpe/refined_poses', String, queue_size=10)
     completor = Completor("/home/rmhri/markerless-human-perception/src/hpe/src/MLP_bio_h36m_cameraview_3D_absolute_onehot",3)
     
     # Synchronize
