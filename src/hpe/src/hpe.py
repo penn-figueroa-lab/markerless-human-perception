@@ -14,6 +14,8 @@ import sys
 sys.path.append('/usr/local/python')
 from openpose import pyopenpose as op
 import time
+from geometry_msgs.msg import Pose, PoseStamped, Point, Quaternion,TransformStamped
+import tf2_ros
 
 H135 = 25
 F135 = H135 + 40
@@ -22,6 +24,7 @@ parts_25 = ["Nose","Neck", "RShoulder", "RElbow", "RWrist", "LShoulder", "LElbow
             "RHip", "RKnee", "RAnkle", "LHip", "LKnee", "LAnkle", "REye", "LEye", "REar", "LEar", "LBigToe",\
             "LSmallToe", "LHeel", "RBigToe", "RSmallToe", "RHeel", "Background"]
     
+color = [(255,0,0),(0,255,0),(0,0,255),(255,255,0),(255,0,255),(0,0,255)]
 
 import argparse
 opWrapper = None
@@ -38,7 +41,7 @@ def to_3d(u,v,d, acc):
     m = np.array([u,v,1])
     m = np.transpose(m)
     RES = (inv(K) @ m ) * d
-    kp_3d =  {"x" : float(RES[0]), "y": float(RES[1]), "z" : float(RES[2]), "u" : float(u), "v":float(v), "d" : float(d), "acc": float(acc)}
+    kp_3d =  {"x" : float(RES[0])/1000, "y": float(RES[1])/1000, "z" : float(RES[2])/1000, "u" : float(u), "v":float(v), "d" : float(d)/1000, "acc": float(acc)}
 
     return kp_3d
 
@@ -64,7 +67,8 @@ def get_3D_keypoints(depth,rgb):
         if x >= width:
             x = width -1
         acc = rgb[key][2]
-        kp3d = to_3d(y,x,d, acc)
+        kp3d = to_3d(x,y,d, acc)
+        # kp3d = to_3d(y,x,d, acc)
         
         # kp3d["name"] = key
         keypoints_3d[key] = kp3d
@@ -133,6 +137,24 @@ def openpose_process(image):
     opWrapper.emplaceAndPop(op.VectorDatum([datum]))
     return printKeypoints(datum)
 
+def broadcast_point(frame,name,x,y,z):
+    point = Pose()
+    point.position.x = x
+    point.position.y = y
+    point.position.z = z
+    point.orientation.x = 1
+    point.orientation.y = 0
+    point.orientation.z = 0
+    point.orientation.w = 0
+    transform = TransformStamped()
+    transform.header.stamp = rospy.Time.now()
+    transform.header.frame_id = frame  # Fixed frame
+    transform.child_frame_id = name
+    transform.transform.translation = point.position
+    transform.transform.rotation = point.orientation
+    tf_broadcaster.sendTransform(transform)
+    print(transform)
+
 def callback(data_color,data_depth, camera_info):
     #print("got data")
     global K
@@ -148,26 +170,46 @@ def callback(data_color,data_depth, camera_info):
     
     K = np.array(camera_info.K).reshape(3,3)
     
+    # send pose msg
     if res:
         for i in range(0, len(res)):
             res[i] = get_3D_keypoints(depth_array,res[i])
         out_msg = { "timestamp" : camera_info.header.stamp.to_sec() , "value" : res}
         out_msg = json.dumps(out_msg)
-        pub.publish(out_msg)
+        pose_pub.publish(out_msg)
+        
+    # send image labeled
+    if res:
+        for i in range(0, len(res)):
+            for part in parts_25:
+                if part != 'Background' and res[i][part]["acc"] > 0:
+                    # print(int(res[i][part]["u"]),int(res[i][part]["v"]))
+                    cv_color = cv2.circle(cv_color,(int(res[i][part]["u"]),int(res[i][part]["v"])), 4, color[i], -1)
+    # cv2.imwrite("/home/rmhri/markerless-human-perception/src/img_labeled.png",cv2.cvtColor(cv_color,cv2.COLOR_BGR2RGB))
+    image_message = bridge.cv2_to_imgmsg(cv_color, data_color.encoding)
+    image_pub.publish(image_message)
+    # for dic in res:
+    #     for k in list(dic.keys()):
+    #         #if k == "RWrist":
+    #         #broadcast_point("realsense",k,dic[k]["x"],dic[k]["y"],dic[k]["z"])
+    #         pass
+    
     
 def main():
-    global bridge,pub
+    global bridge,pose_pub, tf_broadcaster, image_pub
     rospy.init_node("human_pose_estimator")  
     bridge = CvBridge()
     load_openpose()    
     # Initiate listeners
-    color_sub = message_filters.Subscriber('/camera/color/image_raw', msg_Image)
-    depth_sub = message_filters.Subscriber('/camera/aligned_depth_to_color/image_raw', msg_Image)
-    info_sub = message_filters.Subscriber('/camera/color/camera_info', CameraInfo)
+    color_sub = message_filters.Subscriber('/455/color/image_raw', msg_Image)
+    depth_sub = message_filters.Subscriber('/455/aligned_depth_to_color/image_raw', msg_Image)
+    info_sub = message_filters.Subscriber('/455/color/camera_info', CameraInfo)
+    
+    tf_broadcaster = tf2_ros.TransformBroadcaster()
     
     # Setup publisher
-    pub = rospy.Publisher('hpe/poses', String, queue_size=1000)
-    #rospy.init_node('3Dhpe', anonymous=False)
+    pose_pub = rospy.Publisher('hpe/poses', String, queue_size=1000)
+    image_pub = rospy.Publisher('hpe/image_labeled', msg_Image, queue_size=1000)
     
     # Synchronize
     ts = message_filters.TimeSynchronizer([color_sub, depth_sub, info_sub], 10)

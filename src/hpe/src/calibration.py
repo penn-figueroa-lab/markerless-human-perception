@@ -32,7 +32,7 @@ depth_array = None
 SIZE = 1000
 
 def callback(data_color,data_depth, camera_info, m0, m1, m2, m3, m4):
-    global K, depth_array, counter, point_array
+    global K, depth_array, counter, point_array, zero_counter
     cv_color = bridge.imgmsg_to_cv2(data_color, data_color.encoding)
     cv_depth = bridge.imgmsg_to_cv2(data_depth, data_depth.encoding)
     
@@ -45,13 +45,16 @@ def callback(data_color,data_depth, camera_info, m0, m1, m2, m3, m4):
         point_array[2,:] = [m2.point.x, m2.point.y, m2.point.z]
         point_array[3,:] = [m3.point.x, m3.point.y, m3.point.z]
         point_array[4,:] = [m4.point.x, m4.point.y, m4.point.z]
-        
+        zero_counter = np.ones(depth_array.shape)
         # print(m0,m1,m2,m3,m4)
         # rospy.signal_shutdown("Ended the iterations")
     elif counter > SIZE:
-        np.save("/home/rmhri/markerless-human-perception/src/depth",depth_array/counter)
+        np.save("/home/rmhri/markerless-human-perception/src/depth",np.divide(depth_array,zero_counter))
         np.save("/home/rmhri/markerless-human-perception/src/K",K)
         np.save("/home/rmhri/markerless-human-perception/src/points",point_array/counter)
+        np.savetxt("/home/rmhri/markerless-human-perception/src/depth.csv",np.divide(depth_array,zero_counter) , delimiter=',')
+        np.savetxt("/home/rmhri/markerless-human-perception/src/K.csv",K                       , delimiter=',')
+        np.savetxt("/home/rmhri/markerless-human-perception/src/points.csv",point_array/counter, delimiter=',')
         rospy.signal_shutdown("Ended the iterations")
     else:
         point_array[0,:] += [m0.point.x, m0.point.y, m0.point.z]
@@ -60,6 +63,7 @@ def callback(data_color,data_depth, camera_info, m0, m1, m2, m3, m4):
         point_array[3,:] += [m3.point.x, m3.point.y, m3.point.z]
         point_array[4,:] += [m4.point.x, m4.point.y, m4.point.z]
         depth_array += np.array(cv_depth, dtype=np.float32)
+        zero_counter += np.array(cv_depth, dtype=np.float32) > 0
         counter += 1
 
     
@@ -97,7 +101,7 @@ def main():
     print("Setup completed, collecting calibration data:")
     rospy.spin()
 
-if __name__ == main():
+if __name__ == "__main__":
     try:
         main()
     except rospy.ROSInterruptException:

@@ -12,7 +12,7 @@ depth_height = 480
 
 K = np.load("/home/rmhri/markerless-human-perception/src/K.npy")
 depth = np.load("/home/rmhri/markerless-human-perception/src/depth.npy")
-P3D = np.load("/home/rmhri/markerless-human-perception/src/points.npy")*1000 # Optitrack send in 'm'
+P3D = np.load("/home/rmhri/markerless-human-perception/src/points.npy") # Optitrack send in 'm'
 
 import numpy as np
 
@@ -62,20 +62,19 @@ def get_adjancence_matrix(points):
     return adj
     
 def export_RT(p3d):
-    
     permutations = list(itertools.permutations(P3D))
     score = np.empty(len(permutations))
     
-    calib_board = [
+    calib_board = np.array([
         [0,     0,      0],
         [0,     100,     0],
         [200,   100,     0],
         [200,   0,      0],
         [170,   30,      0]
-    ]
+    ])/1000
     
     # gt = get_adjancence_matrix(np.array(p3d))
-    gt = get_adjancence_matrix(np.array(calib_board))
+    gt = get_adjancence_matrix(calib_board)
     win = np.nan
     w_score = np.inf
     for i in range(len(permutations)):
@@ -84,12 +83,16 @@ def export_RT(p3d):
         if score < w_score:
             win = i
             w_score = score
-    print("Average error of optitrack:",np.round(np.mean(np.abs(get_adjancence_matrix(np.array(permutations[win]))-gt)),2),"mm")
-    Rt = rigid_transform_3D(np.array(p3d),np.array(permutations[win]))
-    res = np.dot(np.array(p3d),Rt[:3,:3].transpose())+Rt[:3,3].transpose()
-    print("Average error of realsense:",np.round(np.mean(np.abs(get_adjancence_matrix(np.array(res))-gt)),2),"mm")
-    print("Average error w.r.t. of optitrack for each axis:", np.round(np.mean(np.abs(res-np.array(permutations[win])),axis=0),2),"mm")
+    print("Average error of optitrack:",1000*np.round(np.mean(np.abs(get_adjancence_matrix(np.array(permutations[win]))-gt)),2),"mm")
+    Rt = rigid_transform_3D(p3d, np.array(permutations[win]))
+    res = np.dot(p3d, Rt[:3,:3].transpose())+Rt[:3,3].transpose()
+    print("camera points projected to world frame",res)
+    print("optitrack points in world frame",permutations[win])
+    
+    print("Average error of realsense:",1000*np.round(np.mean(np.abs(get_adjancence_matrix(np.array(res))-gt)),2),"mm")
+    print("Average error w.r.t. of optitrack for each axis:", 1000*np.round(np.mean(np.abs(res-np.array(permutations[win])),axis=0),2),"mm")
     np.save("/home/rmhri/markerless-human-perception/src/RT",Rt)
+    print(Rt)
     exit()
 
 def click_event(event, x, y, flags, params): 
@@ -107,6 +110,16 @@ def click_event(event, x, y, flags, params):
         cv2.imshow('image', img) 
         if len(points2d)==5:
             p3d = []
+            
+            # # DEBUG
+            # points2d = [    
+            #     [399,   400],
+            #     [403,   371],
+            #     [483,   375],
+            #     [486,   405],
+            #     [464,   394]
+            #     ]
+            
             # de-project the point in 3d
             for p2d in points2d:
                 y = (p2d[1] / height) * depth_height
@@ -117,15 +130,17 @@ def click_event(event, x, y, flags, params):
                 if x >= depth_width:
                     x = depth_width -1
                 d = depth[int(y)][int(x)]
+                print("depth:",d)
                 x = p2d[0]
                 y = p2d[1]
                 if y >= height:
                     y = height -1
                 if x >= width:
                     x = width -1
-                p3d.append(to_3d(y,x,d))
+                print(y,x,d)
+                p3d.append(to_3d(x,y,d))
             try:
-                export_RT(p3d)
+                export_RT(np.array(p3d)/1000)
             except Exception as error:
                 print(error)
                 cv2.destroyAllWindows() 

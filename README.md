@@ -39,6 +39,7 @@ roslaunch natnet_ros_cpp natnet_ros.launch
 On PC0 (10.102.224.77) run realsense with the correct launcher in a tab:
 ```
 roslaunch realsense2_camera rs_d435_rmhri.launch
+roslaunch realsense2_camera rs_d455_rmhri.launch json_file_path:=/home/rmhri/d455_config_v1.json
 ```
 
 On PC1 (10.103.142.166) run the real-time 3D pose estimator (i.e., OpenPose):
