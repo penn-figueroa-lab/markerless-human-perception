@@ -1,5 +1,5 @@
 # markerless-human-perception
-Collection of ROS nodes for 3D Markerless Human Pose Estimation 
+Collection of ROS nodes for 3D Markerless Human Pose Estimation and Marker-less Wrist Following
 
 ## Node General Installation
 
@@ -17,18 +17,28 @@ TBD
 ## Human Motion Refinement node
 TBD
 
-## Run Calibration
+## Wrist Tracker
+TBD
+
+## Passive Velocity Controller
+TBD
+
+## Robot Extrinsics
+TBD
+
+## Camera Extrinsics
+TBD
 
 ### Camera stream
-On PC0 (10.102.224.77) connect the Realsense camera and the correct launcher in a tab:
+Connect the Realsense camera to the PC and run the correct launcher:
 ```
-roslaunch realsense2_camera rs_d435_rmhri.launch
+roslaunch realsense2_camera data/rs_d455_rmhri.launch
 ```
 
 ### Optitrack calibration board
 Turn on the OptiTrack device. Turn on the Motive app, load the calibration file, and check if the asset "calib_board" is selected.
 
-Then, on PC0 (10.102.224.77), run natnet_ros_cpp:
+Then, run the modified version of natnet_ros_cpp:
 ```
 roslaunch natnet_ros_cpp natnet_ros.launch
 ```
@@ -36,12 +46,14 @@ roslaunch natnet_ros_cpp natnet_ros.launch
 ## Run demo #0: real-time motion tracking
 
 ### Camera stream
-On PC0 (10.102.224.77) run realsense with the correct launcher in a tab:
+On the PC connected to the robot, launch the two camera streams:
 ```
 roslaunch realsense2_camera rs_d435_rmhri.launch
-roslaunch realsense2_camera rs_d455_rmhri.launch json_file_path:=/home/rmhri/d455_config_v1.json
+roslaunch realsense2_camera rs_d455_rmhri.launch
 ```
 
-On PC1 (10.103.142.166) run the real-time 3D pose estimator (i.e., OpenPose):
+On PC1 run the real-time 3D pose estimator (i.e., OpenPose):
 ```
+cd scritps
+python3 human_pose_estimator.py
 ```
