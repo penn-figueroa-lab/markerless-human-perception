@@ -21,7 +21,11 @@ TBD
 TBD
 
 ## Passive Velocity Controller
-TBD
+We use the default PassiveDS Controller from the [franka_interactive_controller](https://github.com/penn-figueroa-lab/franka_interactive_controllers) repository. Follow the steps in the link to complete the setup.
+
+```
+roslaunch franka_interactive_controllers franka_interactive_bringup.launch
+```
 
 ## Robot Extrinsics
 TBD
