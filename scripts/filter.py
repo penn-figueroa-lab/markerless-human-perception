@@ -10,7 +10,7 @@ import json
 import sys
 import time
 
-from Skeleton import Skeleton, ConstrainedSkeleton
+from COMETH import Skeleton, ConstrainedSkeleton
 from scipy.optimize import linear_sum_assignment
 
 abs_path = "/home/rmhri/"
@@ -39,7 +39,6 @@ p0 = {}
 
 def hugarian_tracking(prev_ext,now_ext):
     global lost_ext,max_id
-    
     
     n_prev = list(prev_ext.keys())
     n_now = list(now_ext.keys())
@@ -130,8 +129,7 @@ def callback(pose):
                 if b.dest.name in labels:
                     pose["value"][p][b.dest.name]["acc"]  = max( pose["value"][p][b.dest.name]["acc"]-0.1,0)
 
-    # Hungarian
-    # Build the skeleton
+    # Hungarian: build the skeleton
     now = []
     for p in range(len(pose["value"])):
         X = [ [pose["value"][p][l]["x"],pose["value"][p][l]["y"],pose["value"][p][l]["z"],pose["value"][p][l]["acc"]] for l in labels ]
