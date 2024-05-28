@@ -23,6 +23,7 @@ SIZE = 10
 f = []
 w = []
 
+
 def rigid_transform_3D(A, B):
     # Transformation matrix that goes from A to B, such as TR*A = B
     # It works using N x 3 or N x 4 points
@@ -64,15 +65,10 @@ def callback(franka, world):
         f.append(p_f)
         w.append(p_w)
     
-    
-    
     if len(f) % SIZE == 0:
         RT = rigid_transform_3D(np.array(w),np.array(f))
         print(np.linalg.inv(RT))
         np.savetxt("RT_world2franka.csv",RT)
-        
-    
-
     
 def main():
     global bridge

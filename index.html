@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="Website for ROMAN2024 Paper">
+  <meta name="keywords" content="A Robust Filter for Marker-less Multi-person Tracking in Human-Robot Interaction Scenarios">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>A Robust Filter for Marker-less Multi-person Tracking in Human-Robot Interaction Scenarios</title>
+
+  <style>
+    .responsive-image {    
+        display: block;    
+        margin-left: auto;
+        margin-right: auto;
+        width: 90%;
+    }
+</style>
+
+<style>
+    ul {
+        list-style-type: none; /* Remove default bullet points */
+    }
+
+    ul li::before {
+        content: "-"; /* Set '-' as the content before each list item */
+        margin-right: 8px; /* Add some space between '-' and the text */
+    }
+</style>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="./static/images/favicon.svg">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+</head>
+<body>
+
+<!-- <nav class="navbar" role="navigation" aria-label="main navigation">
+  <div class="navbar-brand">
+    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </a>
+  </div>
+  <div class="navbar-menu">
+    <div class="navbar-start" style="flex-grow: 1; justify-content: center;">
+      <a class="navbar-item" href="https://samin.netlify.app">
+      <span class="icon">
+          <i class="fas fa-home"></i>
+      </span>
+      </a>      
+    </div>
+  </div>
+</nav> -->
+
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">A Robust Filter for Marker-less Multi-person Tracking in Human-Robot Interaction Scenarios</h1>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">
+              <a href="https://scholar.google.com/citations?hl=it&user=m4TgsRMAAAAJ">Enrico Martini<sup>1,2</sup></a>,
+              <a href="https://www.linkedin.com/in/theharshilparekh/">Harshil Parekh<sup>2</sup></a>,
+              <a href="https://shaotingpeng.github.io">Shaoting Peng<sup>2</sup></a>,
+              <a href="https://scholar.google.com/citations?user=eLA-qo8AAAAJ&hl=it">Nicola Bombieri<sup>1</sup></a>,
+              <a href="https://nbfigueroa.github.io">Nadia Figueroa<sup>2</sup></a>
+            </span>            
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block"><sup>1</sup>Department of Engineering for Innovation Medicine, University of Verona, Italy</span><br>
+            <span class="author-block"><sup>2</sup>GRASP Laboratory, University of Pennsylvania, USA.</span>
+          </div>
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <!-- PDF Link. -->
+              <span class="link-block">
+                <a href="https://github.com/penn-figueroa-lab/markerless-human-perception"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fas fa-file-pdf"></i>
+                  </span>
+                  <span>Paper</span>
+                </a>
+              </span>              
+              <!-- Code Link. -->
+              <span class="link-block">
+                <a href="https://github.com/penn-figueroa-lab/markerless-human-perception"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code</span>
+                  </a>
+              </span>
+              <!-- Dataset Link. -->
+              <!-- <span class="link-block">
+                <a href="https://drive.google.com/drive/folders/1UvcFVPG2TdiaZAsWLX6eSbrvo_UWShB_"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="far fa-images"></i>
+                  </span>
+                  <span>Data</span>
+                  </a> -->
+
+                  <span class="link-block">
+                    <a href="https://youtu.be/8sS7gowsk3o"
+                       class="external-link button is-normal is-rounded is-dark">
+                      <span class="icon">
+                          <i class="fab fa-youtube"></i>
+                      </span>
+                      <span>Video</span>
+                    </a>
+                    <!-- <a href="https://youtu.be/SLCfGewg8zg"
+                       class="external-link button is-normal is-rounded is-dark">
+                      <span class="icon">
+                          <i class="fab fa-youtube"></i>
+                      </span>
+                      <span>Video</span>
+                    </a> -->
+                  </span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Paper video. -->
+<div class="columns is-centered has-text-centered">
+    <div class="column is-four-fifths">
+      <!-- <h2 class="title is-3">Video</h2> -->
+      <div class="publication-video">
+        <iframe src="https://youtu.be/8sS7gowsk3o"
+                frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <!-- Abstract. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            Pursuing natural and marker-less human-robot interaction (HRI) has been a long-standing robotics research focus, driven by the vision of seamless collaboration without physical markers. Marker-less approaches promise an improved user experience, but state-of-the-art struggles with the challenges posed by intrinsic errors in human pose estimation (HPE) and depth cameras. These errors can lead to issues such as robot jittering, which can significantly impact the trust users have in collaborative systems. We propose a filtering pipeline that refines incomplete 3D human poses from an HPE backbone and a single RGB-D camera to address these challenges, solving for occlusions that can degrade the interaction. Experimental results show that using the proposed filter leads to more consistent and noise-free motion representation, reducing unexpected robot movements and enabling smoother interaction.
+          </p>
+        </div>
+      </div>
+    </div>
+    <!--/ Abstract. -->
+    <!--/ Paper video. -->
+</div><br>
+<!-- <img src="figures/general_pipeline.jpg" alt="Interact-banner" class="responsive-image"> -->
+  <!-- <center><img src="figures/general_pipeline.jpg" alt="Interact-banner" style="width:80%;"></center> -->
+  
+</section>
+<!-- <section class="section">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3">PoseTron: A Multimodal transformer for multi-agent motion prediction</h2>
+      <p>It features:</p>
+      <ul>
+          <li>Multimodal Pose Encoder for encoding pose information for multiple agents</li>          
+          <li>Multimodal Pose Decoder for auto-regressively predicitng future pose information</li>          
+      </ul>
+      
+    <img src="./static/images/posetron_architecture.png" alt="PoseTron-banner" class="responsive-image">          
+</section> -->
+
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title">BibTeX</h2>
+    <pre><code>@inproceedings{Martini2024,
+      title={A Robust Filter for Marker-less Multi-person Tracking in Human-Robot Interaction Scenarios},
+      author={Martini, Enrico and Parekh, Harshil and Peng, Shaoting and Bombieri, Nicola and Figueroa, Nadia},
+      booktitle={2024 33nd IEEE International Conference on Robot and Human Interactive Communication (RO-MAN)},
+      pages={1-6},
+      year={2024},
+      organization={IEEE}
+    }
+</code></pre>
+  </div>
+</section>
+
+
+<footer class="footer">
+  <div class="container">    
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <p>
+            This website is licensed under a <a rel="license"
+                                                href="https://creativecommons.org/licenses/by-nc-nd/4.0/">Attribution-NonCommercial-NoDerivs 
+                                                4.0 International License</a>.
+          </p>
+          <p>
+            Website borrowed from  <a href="https://github.com/nerfies/nerfies.github.io">Nerfies</a> 
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
