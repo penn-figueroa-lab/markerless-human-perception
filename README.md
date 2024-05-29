@@ -1,22 +1,34 @@
 # A Robust Filter for Marker-less Multi-person Tracking in Human-Robot Interaction Scenarios
 Collection of ROS nodes for 3D marker-less human pose estimation from single RGB-D camera and marker-less wrist following.
 
-Please check our
+Please check out our
 [project page](https://penn-figueroa-lab.github.io/markerless-human-perception/)
 and the [explanation video](https://penn-figueroa-lab.github.io/markerless-human-perception/).
-## Nodes Installation
+
+<p align="center">
+<iframe width="560" height="315" src="https://www.youtube.com/embed/8sS7gowsk3o?si=UgKJMbCoYi3J_Se9" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+</p>
+
+## Installation
 
 ```
 git clone https://github.com/penn-figueroa-lab/markerless-human-perception.git
 cd markerless-human-perception
-git clone git@github.com:PARCO-LAB/COMETH.git
 source /opt/ros/noetic/setup.bash
 catkin_make
 source devel/setup.bash
 ```
 
+### Dependencies
+Please follow the installation of the following packages:
+- [COMETH](https://github.com/PARCO-LAB/COMETH): biomechanical model of the human body
+- [ROS Noetic Ninjemys](https://wiki.ros.org/noetic): inter-nodes communication 
+- [Realsense-ROS](https://github.com/IntelRealSense/realsense-ros/tree/ros1-legacy): ROS wrapper for the communication with realsense cameras
+
+## Nodes description
+
 ### Camera stream
-Connect the Realsense camera to the PC and run with the correct launchfile:
+Connect the realsense camera to the PC and run with the correct launchfile:
 
 ```
 roslaunch realsense2_camera data/rs_d455_rmhri.launch
@@ -32,7 +44,9 @@ roslaunch franka_interactive_controllers franka_interactive_bringup.launch
 ## Calibration 
 We prepared a set of scripts usefull for retrieving 4x4 RT matrices to transform a point from the franka coordinate system and the camera coordinate system to the Optitrack one.
 <!-- ![plot](./static/calib_board.jpg) -->
+<p align="center">
 <img src="./static/calib_board.jpg" width="320"/>
+</p>
 
 The dwg file of calibration board used to perform the calibration can be found [here](data/calib_board.dwg).
 
