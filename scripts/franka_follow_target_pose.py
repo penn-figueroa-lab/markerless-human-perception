@@ -7,7 +7,7 @@ import tf2_ros
 import tf.transformations as tf
 import numpy as np
 
-abs_path = "/home/rmhri/catkin_ws/src/rmhri_franka/"
+abs_path = "/home/rmhri/"
 
 class PoseController:
     def __init__(self):
@@ -89,44 +89,6 @@ class PoseController:
 
                 # Publish the Twist message
                 self.pub_desired_ee_vel.publish(twist_msg)
-
-
-    def run_pose_impedance(self):
-
-        while True:
-            if (self.ee_pose is None) or (self.target_pose is None):
-                continue
-            else:
-                # Define the desired position based on the offset
-                desired_position = Point()
-                desired_position.x = self.target_pose[0] - self.approach_distance
-                desired_position.y = self.target_pose[1] 
-                desired_position.z = self.target_pose[2] + self.approach_distance
-
-                # Define the desired orientation (maintaining the same orientation)
-                desired_orientation = Quaternion()
-                desired_orientation.x = self.ee_pose[3]
-                desired_orientation.y = self.ee_pose[4]
-                desired_orientation.z = self.ee_pose[5]
-                desired_orientation.w = self.ee_pose[6]
-
-                # Create a new Pose message with the desired pose
-                desired_pose = PoseStamped()
-                desired_pose.pose.position = desired_position
-                desired_pose.pose.orientation = desired_orientation
-
-                # Publish the desired pose
-                print("desired_pose", desired_pose)
-                self.pub_desired_pose.publish(desired_pose)
-
-                # Publish the desired pose as a TF transform
-                transform = geometry_msgs.msg.TransformStamped()
-                transform.header.stamp = rospy.Time.now()
-                transform.header.frame_id = "panda_link0"  # Fixed frame
-                transform.child_frame_id = "desired_pose"
-                transform.transform.translation = desired_position
-                transform.transform.rotation = desired_orientation
-                self.tf_broadcaster.sendTransform(transform)
 
 if __name__ == '__main__':
     try:

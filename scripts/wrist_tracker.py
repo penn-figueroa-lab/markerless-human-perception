@@ -4,11 +4,11 @@ import quaternion
 import rospy
 import message_filters
 from std_msgs.msg import String
-from geometry_msgs.msg import Pose, PoseStamped, Point, Quaternion,TransformStamped
+from geometry_msgs.msg import Pose, PoseStamped, TransformStamped
 import json
 import tf2_ros
 import quaternion
-abs_path = "/home/rmhri/markerless-human-perception/"
+abs_path = "/home/rmhri/"
 previous_body = None
 
 def callback(pose_sub, ee_sub):
@@ -127,7 +127,7 @@ def main():
     pub = rospy.Publisher('hpe/ee_goal', PoseStamped, queue_size=10)
     tf_broadcaster = tf2_ros.TransformBroadcaster()
     
-    Rt_c2w = np.load(abs_path + "src/RT_camera2world.npy")
+    Rt_c2w = np.load(abs_path + "markerless-human-perception/src/RT_camera2world.npy")
     Rt_w2c = np.linalg.inv(Rt_c2w)
     
     # Synchronize

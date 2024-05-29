@@ -14,6 +14,8 @@ import signal
 from datetime import datetime
 images = []
 
+abs_path = "/home/rmhri/"
+
 def save_images_as_video(output_path, fps=30):
     # Get the shape of the first image to determine the video dimensions
     height, width, _ = images[0].shape
@@ -42,7 +44,7 @@ signal.signal(signal.SIGINT, signal_handler)
 
 def save_files(fps=30):
     if len(images) > 0:
-        save_images_as_video("/home/rmhri/markerless-human-perception/tmp/" + name + ".mp4",fps=fps)
+        save_images_as_video(abs_path+"markerless-human-perception/tmp/" + name + ".mp4",fps=fps)
         print("\nSaved",len(images))
     else:
         print("No frame")
