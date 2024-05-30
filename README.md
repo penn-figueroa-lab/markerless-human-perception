@@ -95,7 +95,7 @@ If you are going to use some of these nodes for a scientific research, please ci
 @inproceedings{Martini2024,
   title={A Robust Filter for Marker-less Multi-person Tracking in Human-Robot Interaction Scenarios},
   author={Martini, Enrico and Parekh, Harshil and Peng, Shaoting and Bombieri, Nicola and Figueroa, Nadia},
-  booktitle={2024 33nd IEEE International Conference on Robot and Human Interactive Communication (RO-MAN)},
+  booktitle={2024 33rd IEEE International Conference on Robot and Human Interactive Communication (RO-MAN)},
   pages={1-6},
   year={2024},
   organization={IEEE}
