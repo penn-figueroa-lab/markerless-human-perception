@@ -1,9 +1,11 @@
 # A Robust Filter for Marker-less Multi-person Tracking in Human-Robot Interaction Scenarios
-Collection of ROS nodes for 3D marker-less human pose estimation from single RGB-D camera and marker-less wrist following.
 
 Please check out our
-[project page](https://penn-figueroa-lab.github.io/markerless-human-perception/)
-and the [explanation video](https://penn-figueroa-lab.github.io/markerless-human-perception/).
+[paper](https://arxiv.org/pdf/2406.01832) and [project page](https://penn-figueroa-lab.github.io/markerless-human-perception/).
+
+Collection of ROS nodes for 3D marker-less human pose estimation from single RGB-D camera and marker-less wrist following.
+
+
 
 <!-- <p align="center">
 <iframe width="560" height="315" src="https://www.youtube.com/embed/8sS7gowsk3o?si=UgKJMbCoYi3J_Se9" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
